@@ -71,7 +71,7 @@ Papa.parse(csvURL, {
 
     recent.forEach(r => {
       const li = document.createElement('li');
-      li.innerHTML = `<strong>${r.Name}</strong> <span class="position">– ${r.Affiliation || ""}</span>`;
+      li.innerHTML = `<strong>${r.Name}</strong> <span class="position">– ${r.Position || ""}</span>`;
       list.appendChild(li);
     });
   },
