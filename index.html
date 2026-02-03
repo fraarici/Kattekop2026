@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Open letter to CvB on ending collaboration with De Kattekop</title>
+</head>
+<body>
+
+
+  <h3>Petition Signatures</h3>
+  <p>Total signatures: <strong id="count">Loading…</strong></p>
+  <h3>Most Recent Signers</h3>
+  <ul id="recent">
+    <li>Loading…</li>
+  </ul>
+
+      <script>
+        const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQrKfLkbECDuLCciZHHtW4bXPKIEdTKoIYefHNREvfIcrG9pINZAQLd3_luoNvjB78Xf8KPyYfKt7lL/pub?gid=284999118&single=true&output=csv";\
+        const MAX_RECENT = 5;
+
+        fetch(sheetCSV)
+          .then(res => {
+            if (!res.ok) throw new Error("HTTP " + res.status);
+            return res.text();
+          })
+          .then(csv => {
+            const rows = csv.trim().split(/\r?\n/);
+
+            const headers = rows[0]
+              .split(',')
+              .map(h => h.replace(/(^"|"$)/g, '').trim().toLowerCase());
+
+            const nameIndex = headers.indexOf('name');
+            const positionIndex = headers.indexOf('position');
+
+            if (nameIndex === -1) {
+              document.getElementById('count').textContent = "Name column not found";
+              return;
+            }
+
+            const validRows = [];
+
+            rows.slice(1).forEach(row => {
+              const cols = row.split(',').map(c => c.replace(/(^"|"$)/g, '').trim());
+              const name = cols[nameIndex];
+              if (name) validRows.push(cols);
+            });
+
+            // Total count
+            document.getElementById('count').textContent = validRows.length;
+
+            // Most recent N
+            const recent = validRows.slice(-MAX_RECENT).reverse();
+
+            const list = document.getElementById('recent');
+            list.innerHTML = "";
+
+            recent.forEach(r => {
+              const li = document.createElement('li');
+              const name = r[nameIndex];
+              const position = positionIndex !== -1 ? r[positionIndex] : "";
+
+              li.innerHTML = `<strong>${name}</strong> <span class="position">– ${position}</span>`;
+              list.appendChild(li);
+            });
+          })
+          .catch(err => {
+            console.error(err);
+            document.getElementById('count').textContent = "Failed to load data";
+            document.getElementById('recent').innerHTML = "<li>Error loading data</li>";
+          });
+      </script>
+
+  <style>
+  .form-container {
+    width: 100%;
+    max-width: 700px;
+    margin: auto;
+  }
+
+  .form-container iframe {
+    width: 100%;
+    border: none;
+  }
+</style>
+<div class="form-container">
+  <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfESjXnv0VTO6mGl-kH3ZSIV0mhD3CZcpuD3aKETZ7eMMmsfA/viewform"
+          width="640"
+          height="800"
+          frameborder="0"
+          marginheight="0"
+          marginwidth="0">
+    Loading…
+  </iframe>
+  </div>
+</body>
+</html>
