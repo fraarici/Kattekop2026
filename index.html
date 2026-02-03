@@ -8,69 +8,105 @@
 <body>
 
 
-  <h3>Petition Signatures</h3>
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Petition</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1, h3 { text-align: center; }
+    #recent li { margin: 4px 0; }
+    .position { color: #666; font-size: 0.9em; }
+    .form-container {
+      width: 100%;
+      margin: 40px 0;
+    }
+    .form-container iframe {
+      width: 100%;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Petition Signatures</h1>
   <p>Total signatures: <strong id="count">Loading…</strong></p>
+
   <h3>Most Recent Signers</h3>
   <ul id="recent">
     <li>Loading…</li>
   </ul>
 
-      <script>
+  <div class="form-container">
+    <iframe 
+      src="https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform?embedded=true"
+      height="900"
+      loading="lazy">
+      Loading…
+    </iframe>
+  </div>
+
+  <script>
+    const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQrKfLkbECDuLCciZHHtW4bXPKIEdTKoIYefHNREvfIcrG9pINZAQLd3_luoNvjB78Xf8KPyYfKt7lL/pub?gid=284999118&single=true&output=csv";\
+";
+    const proxyURL = "https://corsproxy.io/?" + encodeURIComponent(csvURL);
+    const MAX_RECENT = 5;
+
+    fetch(proxyURL)
+      .then(res => {
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        return res.text();
+      })
+      .then(csv => {
+        const rows = csv.trim().split(/\r?\n/);
+        const headers = rows[0]
+          .split(',')
+          .map(h => h.replace(/(^"|"$)/g, '').trim().toLowerCase());
+
+        const nameIndex = headers.indexOf('name');
+        const positionIndex = headers.indexOf('position');
+
+        if (nameIndex === -1) {
+          document.getElementById('count').textContent = "Name column not found";
+          return;
+        }
+
+        const validRows = rows.slice(1)
+          .map(row => row.split(',').map(c => c.replace(/(^"|"$)/g, '').trim()))
+          .filter(cols => cols[nameIndex]);
+
+        document.getElementById('count').textContent = validRows.length;
+
+        const recent = validRows.slice(-MAX_RECENT).reverse();
+        const list = document.getElementById('recent');
+        list.innerHTML = "";
+
+        recent.forEach(r => {
+          const name = r[nameIndex];
+          const position = positionIndex !== -1 ? r[positionIndex] : "";
+          const li = document.createElement('li');
+          li.innerHTML = `<strong>${name}</strong> <span class="position">– ${position}</span>`;
+          list.appendChild(li);
+        });
+      })
+      .catch(err => {
+        console.error(err);
+        document.getElementById('count').textContent = "Failed to load data";
+        document.getElementById('recent').innerHTML = "<li>Error loading data</li>";
+      });
+  </script>
+
         const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQrKfLkbECDuLCciZHHtW4bXPKIEdTKoIYefHNREvfIcrG9pINZAQLd3_luoNvjB78Xf8KPyYfKt7lL/pub?gid=284999118&single=true&output=csv";\
-        const MAX_RECENT = 5;
-
-        fetch(sheetCSV)
-          .then(res => {
-            if (!res.ok) throw new Error("HTTP " + res.status);
-            return res.text();
-          })
-          .then(csv => {
-            const rows = csv.trim().split(/\r?\n/);
-
-            const headers = rows[0]
-              .split(',')
-              .map(h => h.replace(/(^"|"$)/g, '').trim().toLowerCase());
-
-            const nameIndex = headers.indexOf('name');
-            const positionIndex = headers.indexOf('position');
-
-            if (nameIndex === -1) {
-              document.getElementById('count').textContent = "Name column not found";
-              return;
-            }
-
-            const validRows = [];
-
-            rows.slice(1).forEach(row => {
-              const cols = row.split(',').map(c => c.replace(/(^"|"$)/g, '').trim());
-              const name = cols[nameIndex];
-              if (name) validRows.push(cols);
-            });
-
-            // Total count
-            document.getElementById('count').textContent = validRows.length;
-
-            // Most recent N
-            const recent = validRows.slice(-MAX_RECENT).reverse();
-
-            const list = document.getElementById('recent');
-            list.innerHTML = "";
-
-            recent.forEach(r => {
-              const li = document.createElement('li');
-              const name = r[nameIndex];
+         r[nameIndex];
               const position = positionIndex !== -1 ? r[positionIndex] : "";
 
-              li.innerHTML = `<strong>${name}</strong> <span class="position">– ${position}</span>`;
-              list.appendChild(li);
-            });
-          })
-          .catch(err => {
-            console.error(err);
-            document.getElementById('count').textContent = "Failed to load data";
-            document.getElementById('recent').innerHTML = "<li>Error loading data</li>";
-          });
-      </script>
 
   <style>
   .form-container {
