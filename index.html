@@ -31,6 +31,7 @@
 <h3>Signatures</h3>
 <p>Total signatures: <strong id="count">Loading…</strong></p>
 
+
 <!--<h3>Most Recent Signers</h3>
 <ul id="recent">
   <li>Loading…</li>
@@ -53,6 +54,36 @@
   const MAX_RECENT = 5;
 
   Papa.parse(csvURL, {
+    download: true,
+    header: true,
+    skipEmptyLines: true,
+    complete: function(results) {
+      // Filter only rows with Display = Yes
+      const data = results.data.filter(row => 
+        row.Name && row.Display && row.Display.toLowerCase() === "yes"
+      );
+
+      document.getElementById('count').textContent = data.length;
+
+      const recent = data.slice(-MAX_RECENT).reverse();
+      const list = document.getElementById('recent');
+      list.innerHTML = "";
+
+      recent.forEach(r => {
+        const li = document.createElement('li');
+        li.textContent = r.Name; // Only show Name
+        list.appendChild(li);
+      });
+    },
+    error: function(err) {
+      console.error(err);
+      document.getElementById('count').textContent = "Error loading CSV";
+      document.getElementById('recent').innerHTML = "<li>Error loading data</li>";
+    }
+  });
+</script>
+
+<!--  Papa.parse(csvURL, {
     download: true,
     header: true,        // Use first row as headers
     skipEmptyLines: true,
@@ -77,7 +108,7 @@
       document.getElementById('recent').innerHTML = "<li>Error loading data</li>";
     }
   });
-</script>
+</script>-->
 
 </body>
 </html>
