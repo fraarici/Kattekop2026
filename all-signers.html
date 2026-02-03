@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>All Petition Signers</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+    }
+    h1 { text-align: center; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 8px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 20px;
+      font-weight: bold;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+
+<h1>All Petition Signers</h1>
+<p>Total signatures: <strong id="count">Loading…</strong></p>
+
+<table id="signers">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Name</th>
+      <th>Position</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td colspan="3">Loading…</td></tr>
+  </tbody>
+</table>
+
+<a href="index.html" class="back-link">← Back to Petition</a>
+
+<!-- Include PapaParse -->
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script>
+  const csvURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQrKfLkbECDuLCciZHHtW4bXPKIEdTKoIYefHNREvfIcrG9pINZAQLd3_luoNvjB78Xf8KPyYfKt7lL/pub?output=csv"; // replace with your Google Sheets published CSV
+  Papa.parse(csvURL, {
+    download: true,
+    header: true,
+    skipEmptyLines: true,
+    complete: function(results) {
+      const data = results.data.filter(row => row.Name);
+      document.getElementById('count').textContent = data.length;
+
+      const tbody = document.querySelector("#signers tbody");
+      tbody.innerHTML = "";
+
+      data.forEach((row, index) => {
+        const tr = document.createElement("tr");
+        const name = row.Name;
+        const position = row.Position || "";
+        tr.innerHTML = `<td>${index + 1}</td><td>${name}</td><td>${position}</td>`;
+        tbody.appendChild(tr);
+      });
+    },
+    error: function(err) {
+      console.error(err);
+      document.getElementById('count').textContent = "Error loading CSV";
+      const tbody = document.querySelector("#signers tbody");
+      tbody.innerHTML = "<tr><td colspan='3'>Error loading data</td></tr>";
+    }
+  });
+</script>
+
+</body>
+</html>
