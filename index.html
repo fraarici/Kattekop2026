@@ -59,6 +59,36 @@
     header: true,
     skipEmptyLines: true,
     complete: function(results) {
+      const allSigners = results.data.filter(row => row.Name); // Count all signers
+      document.getElementById('count').textContent = allSigners.length;
+
+      // Only display rows where Display = Yes
+      const displaySigners = allSigners.filter(row => row.Display && row.Display.toLowerCase() === "yes");
+      const recent = displaySigners.slice(-MAX_RECENT).reverse();
+
+      const list = document.getElementById('recent');
+      list.innerHTML = "";
+
+      recent.forEach(r => {
+        const li = document.createElement('li');
+        li.textContent = r.Name; // Only display Name
+        list.appendChild(li);
+      });
+    },
+    error: function(err) {
+      console.error(err);
+      document.getElementById('count').textContent = "Error loading CSV";
+      document.getElementById('recent').innerHTML = "<li>Error loading data</li>";
+    }
+  });
+</script>
+
+<!--  
+  Papa.parse(csvURL, {
+    download: true,
+    header: true,
+    skipEmptyLines: true,
+    complete: function(results) {
       // Filter only rows with Display = Yes
       const data = results.data.filter(row => 
         row.Name && row.Display && row.Display.toLowerCase() === "yes"
